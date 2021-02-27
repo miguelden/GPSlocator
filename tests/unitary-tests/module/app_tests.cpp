@@ -1,12 +1,11 @@
 /**
  * @file App_test.cpp
  *
- * @author Instituto Tecnologico de Informatica
+ * @author miguel garcia (miguelden@gmail.com)
  *
  * @brief
  *    Tests for GPSlocator main APP
  */
-
 
 #include <gtest/gtest.h>
 #include "app.h"

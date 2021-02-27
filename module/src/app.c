@@ -26,7 +26,5 @@ void app_step (
 
 )
 {
-    static uint8_t i = 0;
 
-    i++;
 }
