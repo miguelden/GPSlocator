@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.11)
 set(library "gpslocator")
 
 SET(CMAKE_C_FLAGS " -Wall ${TLSF_FLAGS} ${CMAKE_C_FLAGS}")
+set (CMAKE_C_STANDARD 99)
 
 include(lib-version.cmake)
 STRING(TOUPPER ${library} LIB)
