@@ -25,6 +25,10 @@ if(COVERAGE)
     MESSAGE(STATUS "Coverage active. USE DEBUG mode and do not release this code!")
 endif()
 
+set(DATADIR ${CMAKE_CURRENT_SOURCE_DIR}/tests/data/ ${DATADIR})
+message(STATUS "****** DATADIR: " ${DATADIR} " ******")
+add_definitions( -DDATADIR666="${DATADIR}" )
+
 #############################################################################
 #   S U B D I R E C T O R I E S
 #############################################################################

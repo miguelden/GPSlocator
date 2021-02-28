@@ -21,11 +21,12 @@
 
 /* -- Local variables -- */
 
-/** Target position (39.4731325, -0.3677324) * 10^7 [10^-7 * deg] */
-static const position_st target_pos = {.latitude = 394731325L, .longitude = -3677324L};
+/** Target position (Lat=39.4731325, Lon=-0.3677324, Alt=15.0) */
+static const position_st target_pos = {.latitude = 39.4731325f, .longitude = -0.3677324f, .altitude = 15.0f,
+                                       .is_valid = pos_3d};
 
 /** Range distance to target in meters */
-static const uint32_t target_range = 100UL;
+static const float target_range = 100.0f;
 
 /**
  * @brief Return the target position

@@ -1,7 +1,7 @@
 /**
  * @file distance.c
  *
- * Distance calculator
+ * Position converters and distance calculator
  *
  * Some helpers for converting GPS readings from the WGS84 geodetic system to a local North-East-Up cartesian axis.
  *
@@ -25,9 +25,8 @@
  */
 
 /* -- Includes -- */
-#include <stdint.h>
 #include <math.h>
-#include "distance.h"
+#include "position.h"
 
 
 /* --- WGS-84 geodetic constants --- */
@@ -55,7 +54,14 @@ static float degrees_to_radians(float degrees);
  * @param [out] y    ECEF Y
  * @param [out] z    ECEF Z
  */
-void geodetic_to_ecef(float lat, float lon, float h, float* x, float* y, float* z)
+void position_geodetic_to_ecef (
+        float lat,
+        float lon,
+        float h,
+        float* x,
+        float* y,
+        float* z
+)
 {
     /* Convert to radians in notation consistent with the paper */
     float lambda = degrees_to_radians(lat);
@@ -87,9 +93,17 @@ void geodetic_to_ecef(float lat, float lon, float h, float* x, float* y, float* 
  * @param [out] yNorth  ENU North coordinate
  * @param [out] zUp     ENU UP coordinate
  */
-void ecef_to_enu(float x, float y, float z,
-        float lat0, float lon0, float h0,
-        float* xEast, float* yNorth, float* zUp)
+void position_ecef_to_enu (
+        float x,
+        float y,
+        float z,
+        float lat0,
+        float lon0,
+        float h0,
+        float* xEast,
+        float* yNorth,
+        float* zUp
+)
 {
     /* Convert to radians in notation consistent with the paper */
     float lambda = degrees_to_radians(lat0);
@@ -132,13 +146,21 @@ void ecef_to_enu(float x, float y, float z,
  * @param [out] yNorth  ENU North coordinate
  * @param [out] zUp     ENU UP coordinate
  */
-void geodetic_to_enu(float lat, float lon, float h,
-        float lat0, float lon0, float h0,
-        float* xEast, float* yNorth, float* zUp)
+void position_geodetic_to_enu (
+        float lat,
+        float lon,
+        float h,
+        float lat0,
+        float lon0,
+        float h0,
+        float* xEast,
+        float* yNorth,
+        float* zUp
+)
 {
     float x, y, z;
-    geodetic_to_ecef(lat, lon, h, &x, &y, &z);
-    ecef_to_enu(x, y, z, lat0, lon0, h0, xEast, yNorth, zUp);
+    position_geodetic_to_ecef(lat, lon, h, &x, &y, &z);
+    position_ecef_to_enu(x, y, z, lat0, lon0, h0, xEast, yNorth, zUp);
 }
 
 
@@ -152,7 +174,7 @@ void geodetic_to_enu(float lat, float lon, float h,
  * @param [in] z1   Z1 coordinate in meters
  * @return  The distance between the two coordinates in meters
  */
-float xyz_distance (
+float position_xyz_distance (
         float x0,
         float y0,
         float z0,
@@ -173,7 +195,9 @@ float xyz_distance (
  * @param degrees  Decimar degrees
  * @return  Equivalent in radians
  */
-static float degrees_to_radians(float degrees)
+static float degrees_to_radians (
+        float degrees
+)
 {
     static const float PI = 3.14159265358979323846f;
     return (PI / 180.0f) * degrees;
