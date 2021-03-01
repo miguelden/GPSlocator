@@ -24,23 +24,6 @@ const std::string DATADIR = DATADIR666; // CMakeLists.txt:add_definitions( -DDAT
 
 
 /**
- * Get the square difference between expected and obtained values
- * @param x0  Value 0
- * @param x1  Value 1
- * @return Square error
- */
-static float GetSqError (
-        float x0,
-        float x1
-)
-{
-    float d = x1 - x0;
-    return (d * d);
-}
-
-
-
-/**
  * This reads a NMEA file, pushes each character to the navigation module and gets the resultant positions, that are
  * compared with the positions of a CSV files.
  * Generate a GTEST error in case of differences in one of the positions or in the number of positions.
@@ -61,9 +44,9 @@ void CompareNMEAandCSVfiles (
             if (res!=0) {
                 if (pos_idx<pos0.size()) {
                     auto p = navigation_get_llh();
-                    ASSERT_LE(GetSqError(p.latitude,pos0[pos_idx].latitude), 0.1f);
-                    ASSERT_LE(GetSqError(p.longitude,pos0[pos_idx].longitude), 0.1f);
-                    ASSERT_LE(GetSqError(p.altitude,pos0[pos_idx].altitude), 0.1f);
+                    ASSERT_LE(NmeaUtils::GetSqError(p.latitude,pos0[pos_idx].latitude), 0.1f);
+                    ASSERT_LE(NmeaUtils::GetSqError(p.longitude,pos0[pos_idx].longitude), 0.1f);
+                    ASSERT_LE(NmeaUtils::GetSqError(p.altitude,pos0[pos_idx].altitude), 0.1f);
                     pos_idx++;
                 } else {
                     ASSERT_LT(pos_idx, pos0.size());
@@ -94,9 +77,9 @@ void CompareNMEAwithGGA (
         if (res!=0) {
             auto p = navigation_get_llh();
             if(gga1.fix) {
-                ASSERT_LE(GetSqError(p.latitude,gga1.latitude), 0.1f);
-                ASSERT_LE(GetSqError(p.longitude,gga1.longitude), 0.1f);
-                ASSERT_LE(GetSqError(p.altitude,gga1.altitude), 0.1f);
+                ASSERT_LE(NmeaUtils::GetSqError(p.latitude,gga1.latitude), 0.1f);
+                ASSERT_LE(NmeaUtils::GetSqError(p.longitude,gga1.longitude), 0.1f);
+                ASSERT_LE(NmeaUtils::GetSqError(p.altitude,gga1.altitude), 0.1f);
                 ASSERT_TRUE(p.is_valid != pos_invalid);
             } else {
                 ASSERT_TRUE(p.is_valid == pos_invalid);

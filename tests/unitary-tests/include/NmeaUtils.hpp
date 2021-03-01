@@ -48,6 +48,14 @@ public:
      */
     static std::string GenNMEA_GGAsentence(GgaType gga);
 
+    /**
+     * Get the square difference between expected and obtained values
+     * @param x0  Value 0
+     * @param x1  Value 1
+     * @return Square error
+     */
+    static float GetSqError(float x0, float x1);
+
 
     /** Disabled initializers */
     NmeaUtils() = delete;

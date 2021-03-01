@@ -23,9 +23,15 @@ extern "C" {
 #endif
 
 /**
+* @brief Initialize the state of the GPSlocator
+*/
+void app_init(void);
+
+/**
  * @brief Main step of the GPSlocator
+ * @param [in] d  Input char from GPS device
  */
-void app_step(void);
+void app_step(char d);
 
 #ifdef __cplusplus
 }

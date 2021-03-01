@@ -8,9 +8,11 @@
  */
 
 #include <gtest/gtest.h>
+#include "UserIfMock.hpp"
 #include "userif.h"
 
 using namespace ::std;
+using namespace ::testing;
 
 bool targetOnRange_ = false;
 uint32_t targetOnRangeUpdateCnt_ = 0;
@@ -18,30 +20,26 @@ uint32_t targetOnRangeUpdateCnt_ = 0;
 uint8_t gpsFix_ = false;
 uint32_t gpsFixUpdateCnt_ = 0;
 
-extern "C" {
-
 /** External function to update On-Range-Target indicator */
-void update_target_indicator(uint8_t on_range)
+void UserIfUpdateTargetIndicator(uint8_t on_range)
 {
     targetOnRange_ = (on_range>0);
     targetOnRangeUpdateCnt_++;
 }
 
 /** External function to update Active-GPS-Fix */
-void update_gps_fix(uint8_t active)
+void UserIfUpdateGPSFix(uint8_t active)
 {
     gpsFix_ = (active>0);
     gpsFixUpdateCnt_++;
 }
 
-}
-
-
 /**
  * Update On-Range-Target
  */
-TEST(App, test_set_target_reached_001)
+TEST(UserIf, test_set_target_reached_001)
 {
+    UserIfMock::InitCallbacks(UserIfUpdateTargetIndicator, UserIfUpdateGPSFix);
     auto cnt = targetOnRangeUpdateCnt_;
     uint8_t values[] = {0, 1, 1, 0, 0};
 
@@ -55,8 +53,9 @@ TEST(App, test_set_target_reached_001)
 /**
  * Update GPS-Fix
  */
-TEST(App, test_set_gps_status_001)
+TEST(UserIf, test_set_gps_status_001)
 {
+    UserIfMock::InitCallbacks(UserIfUpdateTargetIndicator, UserIfUpdateGPSFix);
     auto cnt = gpsFix_;
     uint8_t values[] = {0, 1, 1, 0, 0};
 

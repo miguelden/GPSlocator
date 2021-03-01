@@ -122,3 +122,20 @@ string NmeaUtils::GenNMEA_GGAsentence (
 }
 
 
+
+
+/**
+ * Get the square difference between expected and obtained values
+ * @param x0  Value 0
+ * @param x1  Value 1
+ * @return Square error
+ */
+float NmeaUtils::GetSqError (
+        float x0,
+        float x1
+)
+{
+    float d = x1 - x0;
+    return (d * d);
+}
+

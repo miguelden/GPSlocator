@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+#include "position.h"
+
 /**
  * An interface to the MTK3339 GPS module.
  */
