@@ -92,7 +92,9 @@ void update_current_llh (
         int deg = (int)(l / 100);
         l = (l - (float)deg*100.0f) / 60.0f;
         l = (float)deg + l;
-        if (ns == 'S') l = -l;
+        if (ns == 'S') {
+            l = -l;
+        }
 
         current_llh_.latitude = l;
     }
@@ -108,7 +110,9 @@ void update_current_llh (
         int deg = (int)(l / 100);
         l = (l - (float)deg*100.0f) / 60.0f;
         l = (float)deg + l;
-        if (ew == 'W') l = -l;
+        if (ew == 'W') {
+            l = -l;
+        }
 
         current_llh_.longitude = l;
     }

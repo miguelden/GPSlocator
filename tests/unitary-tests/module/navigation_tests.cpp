@@ -62,24 +62,26 @@ void CompareNMEAandCSVfiles (
  * This generates a GGA sentence, pushes each character to the navigation module and gets the resultant position, that
  * is compared with the position of the input GGA struct.
  * Generate a GTEST error in case of differences in one of the parameters of the position.
- * @param gga1  GGA struct with the parameters to generate the GGA sentence
+ * @param original  GGA struct with the parameters to generate the GGA sentence and be parsed
+ * @param expected  GGA struct with the expected output parameters after parsing
  */
 void CompareNMEAwithGGA (
-        GgaType gga1
+        GgaType original,
+        GgaType expected
 )
 {
     bool success = false;
 
-    string nmea1 = NmeaUtils::GenNMEA_GGAsentence(gga1);
+    string nmea1 = NmeaUtils::GenNMEA_GGAsentence(original);
 
     for (uint16_t i=0; i<nmea1.length(); i++) {
         auto res = navigation_add_nmea_char(nmea1.c_str()[i]);
         if (res!=0) {
             auto p = navigation_get_llh();
-            if(gga1.fix) {
-                ASSERT_LE(NmeaUtils::GetSqError(p.latitude,gga1.latitude), 0.1f);
-                ASSERT_LE(NmeaUtils::GetSqError(p.longitude,gga1.longitude), 0.1f);
-                ASSERT_LE(NmeaUtils::GetSqError(p.altitude,gga1.altitude), 0.1f);
+            if(expected.fix) {
+                ASSERT_LE(NmeaUtils::GetSqError(p.latitude,expected.latitude), 0.1f);
+                ASSERT_LE(NmeaUtils::GetSqError(p.longitude,expected.longitude), 0.1f);
+                ASSERT_LE(NmeaUtils::GetSqError(p.altitude,expected.altitude), 0.1f);
                 ASSERT_TRUE(p.is_valid != pos_invalid);
             } else {
                 ASSERT_TRUE(p.is_valid == pos_invalid);
@@ -132,10 +134,25 @@ TEST(Navigation, test_nmea_file_002)
 TEST(Navigation, test_nmea_gga_001)
 {
     navigation_reset();
-    GgaType gga1 = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
-                    .latitude=39.47314319954006f, .longitude=-0.36773293176583255f, .nsIndicator='N', .ewIndicator='E',
+    GgaType gga1_ne = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
+                    .latitude=39.47314319954006f, .longitude=0.36773293176583255f, .nsIndicator='N', .ewIndicator='E',
                     .fix=1, .satellites=12, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
-    CompareNMEAwithGGA(gga1);
+    GgaType gga1_sw = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
+            .latitude=-39.47314319954006f, .longitude=-0.36773293176583255f, .nsIndicator='S', .ewIndicator='W',
+            .fix=1, .satellites=12, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
+
+    GgaType gga2_ne = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
+            .latitude=-10.47314319954006f, .longitude=-0.36773293176583255f, .nsIndicator='N', .ewIndicator='E',
+            .fix=1, .satellites=12, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
+    GgaType gga2_sw = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
+            .latitude=10.47314319954006f, .longitude=0.36773293176583255f, .nsIndicator='S', .ewIndicator='W',
+            .fix=1, .satellites=12, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
+
+    CompareNMEAwithGGA(gga1_ne, gga1_ne);
+    CompareNMEAwithGGA(gga1_sw, gga1_ne);
+
+    CompareNMEAwithGGA(gga2_ne, gga2_ne);
+    CompareNMEAwithGGA(gga2_sw, gga2_ne);
 }
 
 /**
@@ -147,7 +164,7 @@ TEST(Navigation, test_nmea_gga_002)
     GgaType gga1 = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
             .latitude=39.47314319954006f, .longitude=-0.36773293176583255f, .nsIndicator='N', .ewIndicator='E',
             .fix=0, .satellites=2, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
-    CompareNMEAwithGGA(gga1);
+    CompareNMEAwithGGA(gga1, gga1);
 }
 
 /**
@@ -163,17 +180,18 @@ TEST(Navigation, test_nmea_gga_003)
             .fix=1, .satellites=12, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
     string nmea1 = NmeaUtils::GenNMEA_GGAsentence(gga1);
 
-    for (uint16_t i=0; i<nmea1.length(); i++) {
+    for (uint16_t i = 0; i<nmea1.length(); i++) {
         auto res = navigation_add_nmea_char(nmea1.c_str()[i]);
         if (res!=0) {
             auto p = navigation_get_llh();
-            ASSERT_TRUE(p.is_valid == pos_invalid);
+            ASSERT_TRUE(p.is_valid==pos_invalid);
             success = true;
         }
     }
 
     ASSERT_TRUE(success);
 }
+
 
 /**
  * Read NMEA GGA with low number of satellites
@@ -185,12 +203,12 @@ TEST(Navigation, test_nmea_gga_004)
     GgaType gga1 = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
             .latitude=39.47314319954006f, .longitude=-0.36773293176583255f, .nsIndicator='N', .ewIndicator='E',
             .fix=1, .satellites=2, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
-    CompareNMEAwithGGA(gga1);
+    CompareNMEAwithGGA(gga1,gga1);
 
     GgaType gga2 = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
             .latitude=39.47314319954006f, .longitude=-0.36773293176583255f, .nsIndicator='N', .ewIndicator='E',
             .fix=1, .satellites=4, .hdop=1.0, .altitude=13.0, .geoidal=0.0};
-    CompareNMEAwithGGA(gga2);
+    CompareNMEAwithGGA(gga2,gga2);
 }
 
 /**
