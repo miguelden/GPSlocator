@@ -22,7 +22,7 @@ TEST(Target, get_postion_001)
 
     ASSERT_EQ(targetPos.latitude, 39.4731325f);
     ASSERT_EQ(targetPos.longitude, -0.3677324f);
-    ASSERT_EQ(targetPos.altitude, 15.0f);
+    ASSERT_EQ(targetPos.altitude, 8.0f);
     ASSERT_EQ(targetPos.is_valid, pos_3d);
 }
 

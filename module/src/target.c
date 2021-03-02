@@ -21,8 +21,8 @@
 
 /* -- Local variables -- */
 
-/** Target position (Lat=39.4731325, Lon=-0.3677324, Alt=15.0) */
-static const position_st target_pos = {.latitude = 39.4731325f, .longitude = -0.3677324f, .altitude = 15.0f,
+/** Target position (Lat=39.4731325, Lon=-0.3677324, Alt=8.0) */
+static const position_st target_pos = {.latitude = 39.4731325f, .longitude = -0.3677324f, .altitude = 8.0f,
                                        .is_valid = pos_3d};
 
 /** Range distance to target in meters */
