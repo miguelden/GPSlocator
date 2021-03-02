@@ -48,11 +48,11 @@ void app_step (
     /* Device */
     position_st llh;
     float enu[3];
-    float dist;
-    uint8_t on_range = 0;
 
     /* Update the navigation component */
     if ( navigation_add_nmea_char(d) ) {
+
+        uint8_t on_range = 0;
 
         /* New GGA data is available */
         llh = navigation_get_llh();
@@ -60,6 +60,7 @@ void app_step (
 
         /* LLH is valid if GPS fix is active */
         if (llh.is_valid) {
+            float dist;
 
             /* Compute local ENU position with target as origin */
             position_geodetic_to_enu (
