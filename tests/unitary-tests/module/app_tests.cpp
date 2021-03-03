@@ -9,33 +9,14 @@
 
 #include <gtest/gtest.h>
 #include "NmeaUtils.hpp"
-#include "UserIfMock.hpp"
 #include "position.h"
 #include "navigation.h"
+#include "userif.h"
 #include "app.h"
 
 using namespace ::std;
 using namespace ::testing;
 
-bool app_targetOnRange_ = false;
-uint32_t app_targetOnRangeUpdateCnt_ = 0;
-
-uint8_t app_gpsFix_ = false;
-uint32_t app_gpsFixUpdateCnt_ = 0;
-
-/** External function to update On-Range-Target indicator */
-void AppUpdateTargetIndicator(uint8_t on_range)
-{
-    app_targetOnRange_ = (on_range>0);
-    app_targetOnRangeUpdateCnt_++;
-}
-
-/** External function to update Active-GPS-Fix */
-void AppUpdateGPSFix(uint8_t active)
-{
-    app_gpsFix_ = (active>0);
-    app_gpsFixUpdateCnt_++;
-}
 
 void UpdateApp (
         GgaType gga1
@@ -69,7 +50,6 @@ void CheckNavigation (
  */
 TEST(App, step_001)
 {
-    UserIfMock::InitCallbacks(AppUpdateTargetIndicator, AppUpdateGPSFix);
     app_init();
 
     GgaType gga1 = {.hours=1, .minutes=2, .seconds=3, .milliseconds=4,
@@ -84,11 +64,11 @@ TEST(App, step_001)
 
     UpdateApp(gga1);
     CheckNavigation(gga1);
-    ASSERT_TRUE(app_gpsFix_);
+    ASSERT_GT(userif_get_gps_status(),0);
 
     UpdateApp(gga2);
     CheckNavigation(gga2);
-    ASSERT_FALSE(app_gpsFix_);
+    ASSERT_EQ(userif_get_gps_status(),0);
 }
 
 
@@ -134,12 +114,11 @@ GgaType no_fix_pos[] = {BuildGGA(39.4731325f, -0.3677324f, 8.0f, 0, 1),
  */
 TEST(App, step_002)
 {
-    UserIfMock::InitCallbacks(AppUpdateTargetIndicator, AppUpdateGPSFix);
     app_init();
 
     UpdateApp(p0);
     CheckNavigation(p0);
-    ASSERT_TRUE(app_gpsFix_);
+    ASSERT_GT(userif_get_gps_status(),0);
 }
 
 /**
@@ -147,19 +126,13 @@ TEST(App, step_002)
  */
 TEST(App, step_003)
 {
-    UserIfMock::InitCallbacks(AppUpdateTargetIndicator, AppUpdateGPSFix);
     app_init();
-
-    uint32_t onrange_updated_cnt = app_targetOnRangeUpdateCnt_;
-    uint32_t fix_updated_cnt = app_gpsFixUpdateCnt_;
 
     for(auto p : on_range_pos) {
         UpdateApp(p);
         CheckNavigation(p);
-        ASSERT_TRUE(app_gpsFix_);
-        ASSERT_TRUE(app_targetOnRange_);
-        ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-        ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+        ASSERT_GT(userif_get_gps_status(),0);
+        ASSERT_GT(userif_get_target_reached(),0);
     }
 }
 
@@ -168,19 +141,13 @@ TEST(App, step_003)
  */
 TEST(App, step_004)
 {
-    UserIfMock::InitCallbacks(AppUpdateTargetIndicator, AppUpdateGPSFix);
     app_init();
-
-    uint32_t onrange_updated_cnt = app_targetOnRangeUpdateCnt_;
-    uint32_t fix_updated_cnt = app_gpsFixUpdateCnt_;
 
     for(auto p : out_of_range_pos) {
         UpdateApp(p);
         CheckNavigation(p);
-        ASSERT_TRUE(app_gpsFix_);
-        ASSERT_FALSE(app_targetOnRange_);
-        ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-        ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+        ASSERT_GT(userif_get_gps_status(),0);
+        ASSERT_EQ(userif_get_target_reached(),0);
     }
 }
 
@@ -189,19 +156,13 @@ TEST(App, step_004)
  */
 TEST(App, step_005)
 {
-    UserIfMock::InitCallbacks(AppUpdateTargetIndicator, AppUpdateGPSFix);
     app_init();
-
-    uint32_t onrange_updated_cnt = app_targetOnRangeUpdateCnt_;
-    uint32_t fix_updated_cnt = app_gpsFixUpdateCnt_;
 
     for(auto p : no_fix_pos) {
         UpdateApp(p);
         CheckNavigation(p);
-        ASSERT_FALSE(app_gpsFix_);
-        ASSERT_FALSE(app_targetOnRange_);
-        ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-        ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+        ASSERT_EQ(userif_get_gps_status(),0);
+        ASSERT_EQ(userif_get_target_reached(),0);
     }
 }
 
@@ -211,57 +172,41 @@ TEST(App, step_005)
  */
 TEST(App, step_006)
 {
-    UserIfMock::InitCallbacks(AppUpdateTargetIndicator, AppUpdateGPSFix);
     app_init();
-
-    uint32_t onrange_updated_cnt = app_targetOnRangeUpdateCnt_;
-    uint32_t fix_updated_cnt = app_gpsFixUpdateCnt_;
 
     // Target position
     UpdateApp(p0);
     CheckNavigation(p0);
-    ASSERT_TRUE(app_gpsFix_);
-    ASSERT_TRUE(app_targetOnRange_);
-    ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-    ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+    ASSERT_GT(userif_get_gps_status(),0);
+    ASSERT_GT(userif_get_target_reached(),0);
 
     // No fix position
     UpdateApp(no_fix_pos[0]);
     CheckNavigation(no_fix_pos[0]);
-    ASSERT_FALSE(app_gpsFix_);
-    ASSERT_FALSE(app_targetOnRange_);
-    ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-    ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+    ASSERT_EQ(userif_get_gps_status(),0);
+    ASSERT_EQ(userif_get_target_reached(),0);
 
     // Out of range position
     UpdateApp(out_of_range_pos[2]);
     CheckNavigation(out_of_range_pos[2]);
-    ASSERT_TRUE(app_gpsFix_);
-    ASSERT_FALSE(app_targetOnRange_);
-    ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-    ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+    ASSERT_GT(userif_get_gps_status(),0);
+    ASSERT_EQ(userif_get_target_reached(),0);
 
     // On range position
     UpdateApp(on_range_pos[3]);
     CheckNavigation(on_range_pos[3]);
-    ASSERT_TRUE(app_gpsFix_);
-    ASSERT_TRUE(app_targetOnRange_);
-    ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-    ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+    ASSERT_GT(userif_get_gps_status(),0);
+    ASSERT_GT(userif_get_target_reached(),0);
 
     // No fix position
     UpdateApp(no_fix_pos[2]);
     CheckNavigation(no_fix_pos[2]);
-    ASSERT_FALSE(app_gpsFix_);
-    ASSERT_FALSE(app_targetOnRange_);
-    ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-    ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+    ASSERT_EQ(userif_get_gps_status(),0);
+    ASSERT_EQ(userif_get_target_reached(),0);
 
     // On range position
     UpdateApp(on_range_pos[0]);
     CheckNavigation(on_range_pos[0]);
-    ASSERT_TRUE(app_gpsFix_);
-    ASSERT_TRUE(app_targetOnRange_);
-    ASSERT_EQ(app_targetOnRangeUpdateCnt_, ++onrange_updated_cnt);
-    ASSERT_EQ(app_gpsFixUpdateCnt_, ++fix_updated_cnt);
+    ASSERT_GT(userif_get_gps_status(),0);
+    ASSERT_GT(userif_get_target_reached(),0);
 }
